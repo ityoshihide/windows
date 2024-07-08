@@ -1,0 +1,32 @@
+name: Klocwork build analysis
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Run the Klocwork analysis manually'
+        default: 'Manual Execution'
+        required: true
+
+jobs:
+  klocwork:
+    runs-on: [self-hosted, windows]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Set code page to UTF-8
+        run: chcp 65001
+
+      - name: kwinject
+        run: kwinject make
+
+      - name: kwbuildproject
+        run: kwbuildproject --url ${{secrets.KWSERVER}}/demo -o tables kwinject.out -f
+
+      - name: kwload
+        run: kwadmin --url ${{secrets.KWSERVER}} load demo tables
